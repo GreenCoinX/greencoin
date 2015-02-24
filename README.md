@@ -1,0 +1,2 @@
+# greencoin
+GreenCoinX
