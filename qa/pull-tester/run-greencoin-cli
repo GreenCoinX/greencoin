@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# This is a thin wrapper around greencoin-cli that strips the Windows-style EOLs
+# from the output if present. It is necessary when using greencoin-cli.exe on
+# Linux since shells will interpret the line-endings as part of the result.
+
+CURDIR=$(cd $(dirname "$0"); pwd)
+# Get BUILDDIR and REAL_GREENCOIND
+
+# Grab the value of $REAL_GREENCOINCLI which may be greencoin-cli.exe.
+. "${CURDIR}/tests-config.sh"
+
+"${REAL_GREENCOINCLI}" "$@" | sed 's/\r//'

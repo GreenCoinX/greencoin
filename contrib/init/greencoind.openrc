@@ -1,0 +1,86 @@
+#!/sbin/runscript
+
+# backward compatibility for existing gentoo layout 
+#
+if [ -d "/var/lib/greencoin/.greencoin" ]; then
+	GREENCOIND_DEFAULT_DATADIR="/var/lib/greencoin/.greencoin"
+else
+	GREENCOIND_DEFAULT_DATADIR="/var/lib/greencoind"
+fi
+
+GREENCOIND_CONFIGFILE=${GREENCOIND_CONFIGFILE:-/etc/greencoin/greencoin.conf}
+GREENCOIND_PIDDIR=${GREENCOIND_PIDDIR:-/var/run/greencoind}
+GREENCOIND_PIDFILE=${GREENCOIND_PIDFILE:-${GREENCOIND_PIDDIR}/greencoind.pid}
+GREENCOIND_DATADIR=${GREENCOIND_DATADIR:-${GREENCOIND_DEFAULT_DATADIR}}
+GREENCOIND_USER=${GREENCOIND_USER:-greencoin}
+GREENCOIND_GROUP=${GREENCOIND_GROUP:-greencoin}
+GREENCOIND_BIN=${GREENCOIND_BIN:-/usr/bin/greencoind}
+
+name="GreenCoin Core Daemon"
+description="GreenCoin crypto-currency p2p network daemon"
+
+command="/usr/bin/greencoind"
+command_args="-pid=\"${GREENCOIND_PIDFILE}\" \
+		-conf=\"${GREENCOIND_CONFIGFILE}\" \
+		-datadir=\"${GREENCOIND_DATADIR}\" \
+		-daemon \
+		${GREENCOIND_OPTS}"
+
+required_files="${GREENCOIND_CONFIGFILE}"
+start_stop_daemon_args="-u ${GREENCOIND_USER} \
+			-N ${GREENCOIND_NICE:-0} -w 2000"
+pidfile="${GREENCOIND_PIDFILE}"
+retry=60
+
+depend() {
+	need localmount net
+}
+
+# verify
+# 1) that the datadir exists and is writable (or create it)
+# 2) that a directory for the pid exists and is writable
+# 3) ownership and permissions on the config file
+start_pre() {
+	checkpath \
+	-d \
+	--mode 0750 \
+	--owner "${GREENCOIND_USER}:${GREENCOIND_GROUP}" \
+	"${GREENCOIND_DATADIR}"
+
+	checkpath \
+	-d \
+	--mode 0755 \
+	--owner "${GREENCOIND_USER}:${GREENCOIND_GROUP}" \
+	"${GREENCOIND_PIDDIR}"
+
+	checkpath -f \
+	-o ${GREENCOIND_USER}:${GREENCOIND_GROUP} \
+	-m 0660 \
+	${GREENCOIND_CONFIGFILE}
+
+	checkconfig || return 1
+}
+
+checkconfig()
+{
+	if ! grep -qs '^rpcpassword=' "${GREENCOIND_CONFIGFILE}" ; then
+		eerror ""
+		eerror "ERROR: You must set a secure rpcpassword to run greencoind."
+		eerror "The setting must appear in ${GREENCOIND_CONFIGFILE}"
+		eerror ""
+		eerror "This password is security critical to securing wallets "
+		eerror "and must not be the same as the rpcuser setting."
+		eerror "You can generate a suitable random password using the following"
+		eerror "command from the shell:"
+		eerror ""
+		eerror "bash -c 'tr -dc a-zA-Z0-9 < /dev/urandom | head -c32 && echo'"
+		eerror ""
+		eerror "It is also recommended that you also set alertnotify so you are "
+		eerror "notified of problems:"
+		eerror ""
+		eerror "ie: alertnotify=echo %%s | mail -s \"GreenCoin Alert\"" \
+			"admin@foo.com"
+		eerror ""
+		return 1
+	fi
+}

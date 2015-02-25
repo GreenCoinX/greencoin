@@ -1,0 +1,6 @@
+usr/local/bin/greencoin-qt usr/bin
+share/pixmaps/greencoin32.xpm usr/share/pixmaps
+share/pixmaps/greencoin16.xpm usr/share/pixmaps
+share/pixmaps/greencoin128.png usr/share/pixmaps
+debian/greencoin-qt.desktop usr/share/applications
+debian/greencoin-qt.protocol usr/share/kde4/services/
