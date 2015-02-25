@@ -63,9 +63,9 @@ script: |
   export PATH=${WRAP_DIR}:${PATH}
 
   cd greencoin
- chmod +x depends/config.guess
- chmod +x depends/config.sub
- chmod +x depends/config.site.in
+  chmod +x depends/config.guess
+  chmod +x depends/config.sub
+  chmod +x depends/config.site.in
   BASEPREFIX=`pwd`/depends
   # Build dependencies for each host
   for i in $HOSTS; do
@@ -109,4 +109,3 @@ script: |
   mv $SOURCEDIST $OUTDIR/src
   mv ${OUTDIR}/${DISTNAME}-x86_64-*.tar.gz ${OUTDIR}/${DISTNAME}-linux64.tar.gz
   mv ${OUTDIR}/${DISTNAME}-i686-*.tar.gz ${OUTDIR}/${DISTNAME}-linux32.tar.gz
-
